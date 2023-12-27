@@ -7,12 +7,12 @@ logging.basicConfig(level=logging.INFO, format='[%(asctime)s]:%(message)s')
 # FileManager class manages the creation of files and folder
 class FileManager:
     @staticmethod
-    def create_directory(directory):
+    def create_directory(directory: Path) -> None:
         os.makedirs(directory, exist_ok=True)
         logging.info(f"Creating directory: {directory}")
 
     @staticmethod
-    def create_empty_file(file_path):
+    def create_empty_file(file_path: Path) -> None:
         if (not os.path.exists(file_path)) or (os.path.getsize(file_path) == 0):
             with open(file_path, "w"):
                 pass
