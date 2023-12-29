@@ -12,6 +12,8 @@
 8. Update the dvc.yaml
 9. app.py
 
+gdrive_link = 
+
 # How to run?
 ### STEPS:
 
