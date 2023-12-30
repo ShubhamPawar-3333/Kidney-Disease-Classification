@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/Machine%20Learning%20Projects/Kidney_disease_classification_project/mlruns/0/72bf00565a8b493ba49fb05eda559781/artifacts
+end_time: 1703931437434
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 72bf00565a8b493ba49fb05eda559781
+run_name: likeable-conch-192
+run_uuid: 72bf00565a8b493ba49fb05eda559781
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1703931401074
+status: 3
+tags: []
+user_id: Admin

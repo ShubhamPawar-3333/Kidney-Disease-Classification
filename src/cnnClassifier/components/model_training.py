@@ -5,6 +5,8 @@ import tensorflow as tf
 import time
 from pathlib import Path
 from src.cnnClassifier.entity.config_entity import TrainingConfig
+import warnings
+warnings.filterwarnings("ignore")
 
 class Training:
     def __init__(self, config: TrainingConfig):

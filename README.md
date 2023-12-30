@@ -47,3 +47,15 @@ Now,
 ```bash
 open up you local host and port
 ```
+
+MLFLOW_TRACKING_URI=https://dagshub.com/ShubhamPawar-3333/Kidney-Disease-Classification.mlflow \
+MLFLOW_TRACKING_USERNAME=ShubhamPawar-3333 \
+MLFLOW_TRACKING_PASSWORD=b56ab07fcce183640c3369cb1195faf02a2ef694 \
+python script.py
+
+Run this to export as env variables:
+```bash
+export MLFLOW_TRACKING_URI=https://dagshub.com/ShubhamPawar-3333/Kidney-Disease-Classification.mlflow
+export MLFLOW_TRACKING_USERNAME=ShubhamPawar-3333
+export MLFLOW_TRACKING_PASSWORD=b56ab07fcce183640c3369cb1195faf02a2ef694
+```

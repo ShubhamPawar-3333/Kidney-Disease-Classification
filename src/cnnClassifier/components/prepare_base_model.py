@@ -4,6 +4,8 @@ import urllib.request as request
 from zipfile import ZipFile
 import tensorflow as tf
 from src.cnnClassifier.entity.config_entity import PrepareBaseModelConfig
+import warnings
+warnings.filterwarnings("ignore")
 
 class PrepareBaseModel:
     def __init__(self, config: PrepareBaseModelConfig):
