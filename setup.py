@@ -1,5 +1,4 @@
-from setuptools import setup, find_packages
-from typing import List
+import setuptools
 
 with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
@@ -13,16 +12,15 @@ SRC_REPO = "cnnClassifier"
 AUTHOR_EMAIL = "shubham.d.pawar.3333@gmail.com"
 
 
-# function to get list of packages from file
-def get_requirements(filepath:str) -> List[str]:
-    return [req.replace("\n", "") for req in open(filepath).readlines()]
-
-
-setup(
+setuptools.setup(
     name=SRC_REPO,
     version=__version__,
     author=AUTHOR_NAME,
     author_email=AUTHOR_EMAIL,
-    packages=find_packages(),
-    install_requires=get_requirements('requirements.txt') # fetching packages from requirements.txt
+    url=f"https://github.com/{AUTHOR_NAME}/{REPO_NAME}",
+    project_urls={
+        "Bug Tracker": f"https://github.com/{AUTHOR_NAME}/{REPO_NAME}/issues",
+    },
+    package_dir={"": "src"},
+    packages=setuptools.find_packages(where="src")
 )

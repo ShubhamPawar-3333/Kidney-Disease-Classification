@@ -1,10 +1,10 @@
 import os
-from src.cnnClassifier.constants import *
-from src.cnnClassifier.utils.common import read_yaml, create_directories,save_json
-from src.cnnClassifier.entity.config_entity import DataIngestionConfig
-from src.cnnClassifier.entity.config_entity import PrepareBaseModelConfig
-from src.cnnClassifier.entity.config_entity import TrainingConfig
-from src.cnnClassifier.entity.config_entity import EvaluationConfig
+from cnnClassifier.constants import *
+from cnnClassifier.utils.common import read_yaml, create_directories,save_json
+from cnnClassifier.entity.config_entity import DataIngestionConfig
+from cnnClassifier.entity.config_entity import PrepareBaseModelConfig
+from cnnClassifier.entity.config_entity import TrainingConfig
+from cnnClassifier.entity.config_entity import EvaluationConfig
 
 class ConfigurationManager:
     def __init__(self, config_file_path=CONFIG_FILE_PATH, params_file_path=PARAMS_FILE_PATH) -> None:

@@ -3,8 +3,8 @@ from pathlib import Path
 import mlflow
 import mlflow.keras
 from urllib.parse import urlparse
-from src.cnnClassifier.config.configuration import EvaluationConfig
-from src.cnnClassifier.utils.common import save_json
+from cnnClassifier.config.configuration import EvaluationConfig
+from cnnClassifier.utils.common import save_json
 import warnings
 warnings.filterwarnings("ignore")
 

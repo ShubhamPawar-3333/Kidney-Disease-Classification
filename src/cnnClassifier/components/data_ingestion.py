@@ -2,9 +2,9 @@ import os
 import zipfile
 import gdown
 from pathlib import Path
-from src.cnnClassifier import logger
-from src.cnnClassifier.utils.common import get_size
-from src.cnnClassifier.entity.config_entity import DataIngestionConfig
+from cnnClassifier import logger
+from cnnClassifier.utils.common import get_size
+from cnnClassifier.entity.config_entity import DataIngestionConfig
 
 def id_extractor(url:str)->str:
     return url.split("/")[-2]
