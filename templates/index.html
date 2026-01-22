@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidney Disease Classification | AI-Powered CT Scan Analysis</title>
+    <meta name="description"
+        content="AI-powered kidney disease classification from CT scan images. Detect Normal or Tumor conditions.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.8);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: rgba(148, 163, 184, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 0.3rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 800px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .card-title span {
+            font-size: 1.3rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 14px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .upload-text strong {
+            color: var(--primary);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .preview-container {
+            display: none;
+            margin-top: 1.2rem;
+        }
+
+        .preview-container.active {
+            display: block;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 280px;
+            object-fit: contain;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.9rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 1.2rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-loading {
+            color: transparent;
+            position: relative;
+        }
+
+        .btn-loading::after {
+            content: "";
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .results-container {
+            display: none;
+        }
+
+        .results-container.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-main {
+            text-align: center;
+            padding: 1.8rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 14px;
+            margin-bottom: 1.2rem;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.4rem;
+        }
+
+        .result-prediction {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .result-confidence {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .condition-normal {
+            color: var(--success);
+        }
+
+        .condition-tumor {
+            color: var(--danger);
+        }
+
+        .prob-section {
+            margin-top: 1rem;
+        }
+
+        .prob-section h3 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+        }
+
+        .prob-item {
+            margin-bottom: 0.8rem;
+        }
+
+        .prob-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+        }
+
+        .prob-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .prob-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        .prob-fill.normal {
+            background: var(--success);
+        }
+
+        .prob-fill.tumor {
+            background: var(--danger);
+        }
+
+        .info-row {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .info-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 0.8rem;
+            text-align: center;
+        }
+
+        .info-icon {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .info-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .info-desc {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .placeholder {
+            border: none;
+            background: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">🩺</div>
+                <h1>Kidney Disease Classifier</h1>
+            </div>
+            <p class="subtitle">AI-Powered CT Scan Analysis | VGG16 Deep Learning</p>
+        </header>
+        <div class="main-grid">
+            <div class="card">
+                <h2 class="card-title"><span>📤</span> Upload CT Scan</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">🖼️</div>
+                    <p class="upload-text"><strong>Click to upload</strong> or drag & drop<br>PNG, JPG (max 10MB)</p>
+                    <input type="file" class="file-input" id="fileInput" accept="image/*">
+                </div>
+                <div class="preview-container" id="previewContainer">
+                    <img id="previewImage" class="preview-image" alt="Preview">
+                </div>
+                <button class="btn btn-primary" id="predictBtn" disabled><span>🔬</span> Analyze Image</button>
+                <div class="info-row">
+                    <div class="info-card">
+                        <div class="info-icon condition-normal">✅</div>
+                        <div class="info-title">Normal</div>
+                        <div class="info-desc">Healthy kidney</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon condition-tumor">⚠️</div>
+                        <div class="info-title">Tumor</div>
+                        <div class="info-desc">Abnormal growth</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="card-title"><span>📊</span> Analysis Results</h2>
+                <div id="placeholder" class="upload-area placeholder">
+                    <div class="upload-icon">🔍</div>
+                    <p class="upload-text">Upload a kidney CT scan<br>to get AI analysis</p>
+                </div>
+                <div class="results-container" id="results">
+                    <div class="result-main">
+                        <p class="result-label">Detected Condition</p>
+                        <p class="result-prediction" id="prediction">-</p>
+                        <p class="result-confidence" id="confidence">Confidence: -</p>
+                    </div>
+                    <div class="prob-section">
+                        <h3>Probability Distribution</h3>
+                        <div class="prob-item">
+                            <div class="prob-header"><span>Normal</span><span id="probNormal">0%</span></div>
+                            <div class="prob-bar">
+                                <div class="prob-fill normal" id="barNormal" style="width:0%"></div>
+                            </div>
+                        </div>
+                        <div class="prob-item">
+                            <div class="prob-header"><span>Tumor</span><span id="probTumor">0%</span></div>
+                            <div class="prob-bar">
+                                <div class="prob-fill tumor" id="barTumor" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer>Built with ❤️ using TensorFlow & VGG16 | <a
+                href="https://github.com/ShubhamPawar-3333/Kidney-Disease-Classification" target="_blank">GitHub</a>
+        </footer>
+    </div>
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const predictBtn = document.getElementById('predictBtn');
+        const placeholder = document.getElementById('placeholder');
+        const results = document.getElementById('results');
+        let imageBase64 = null;
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', e => {
+            e.preventDefault(); uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) return alert('Please upload an image');
+            const reader = new FileReader();
+            reader.onload = e => {
+                previewImage.src = e.target.result;
+                previewContainer.classList.add('active');
+                predictBtn.disabled = false;
+                imageBase64 = e.target.result.split(',')[1];
+            };
+            reader.readAsDataURL(file);
+        }
+
+        predictBtn.addEventListener('click', async () => {
+            if (!imageBase64) return;
+            predictBtn.disabled = true;
+            predictBtn.classList.add('btn-loading');
+            predictBtn.textContent = '';
+            try {
+                const res = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageBase64 })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                showResults(data);
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                predictBtn.disabled = false;
+                predictBtn.classList.remove('btn-loading');
+                predictBtn.innerHTML = '<span>🔬</span> Analyze Image';
+            }
+        });
+
+        function showResults(data) {
+            placeholder.style.display = 'none';
+            results.classList.add('active');
+            const pred = document.getElementById('prediction');
+            pred.textContent = data.prediction;
+            pred.className = 'result-prediction condition-' + data.prediction.toLowerCase();
+            document.getElementById('confidence').textContent = 'Confidence: ' + data.confidence + '%';
+            document.getElementById('probNormal').textContent = data.probabilities.Normal + '%';
+            document.getElementById('probTumor').textContent = data.probabilities.Tumor + '%';
+            setTimeout(() => {
+                document.getElementById('barNormal').style.width = data.probabilities.Normal + '%';
+                document.getElementById('barTumor').style.width = data.probabilities.Tumor + '%';
+            }, 100);
+        }
+    </script>
+</body>
+
+</html>

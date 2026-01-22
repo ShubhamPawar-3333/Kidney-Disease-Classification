@@ -15,7 +15,14 @@ class Training:
     
     def get_base_model(self):
         self.model = tf.keras.models.load_model(
-            self.config.updated_base_model_path
+            self.config.updated_base_model_path,
+            compile=False  # Don't load optimizer state
+        )
+        # Recompile with fresh optimizer to avoid version compatibility issues
+        self.model.compile(
+            optimizer=tf.keras.optimizers.SGD(learning_rate=0.001),
+            loss=tf.keras.losses.CategoricalCrossentropy(),
+            metrics=["accuracy"]
         )
 
     def train_valid_generator(self):

@@ -1,61 +1,209 @@
-## Kidney Disease Classification Using MLflow and DVC
+# 🩺 Kidney Disease Classification using Deep Learning
 
-### Workflows
+> AI-powered kidney tumor detection from CT scan images using VGG16 transfer learning with MLOps pipeline
 
-1. Update config.yaml
-2. Update params.yaml
-3. Update the entity
-4. Update the configuration manager in src config
-5. Update the components
-6. Update the pipeline
-7. Update the main.py 
-8. Update the dvc.yaml
-9. app.py
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)
+![MLflow](https://img.shields.io/badge/MLflow-Tracking-blue.svg)
+![DVC](https://img.shields.io/badge/DVC-Pipeline-purple.svg)
+![Flask](https://img.shields.io/badge/Flask-API-green.svg)
 
-gdrive_link = 
+---
 
-# How to run?
-### STEPS:
+## 🖼️ Screenshots
+![Web UI](screenshots/web_ui.png)
+![Sample CT Scan](screenshots/Sample_Detection.png)
 
-Clone the repository
+## 📋 Project Overview
 
-```bash
-https://github.com/ShubhamPawar-3333/Kidney-Disease-Classification.git
+This project implements an end-to-end **MLOps pipeline** for classifying kidney CT scan images as **Normal** or **Tumor** using deep learning. It features automated training pipelines, experiment tracking, and a web interface for real-time predictions.
+
+### 🎯 Key Results
+
+| Metric | Value |
+|--------|-------|
+| **Validation Accuracy** | 86.4% |
+| **Validation Loss** | 0.317 |
+| **Model** | VGG16 (Transfer Learning) |
+| **Training Time** | ~2 hours (CPU) |
+
+---
+
+## ✨ Features
+
+- 🧠 **Deep Learning**: VGG16 transfer learning with custom classification head
+- 🔄 **MLOps Pipeline**: Automated 4-stage pipeline with DVC orchestration
+- 📊 **Experiment Tracking**: MLflow integration for metrics and model versioning
+- 🌐 **Web Interface**: Flask API with modern drag-and-drop UI
+- 🎨 **Data Augmentation**: Rotation, flip, zoom, shift for better generalization
+
+---
+
+## 🏗️ Architecture
+
 ```
-### STEP 01- Create a conda environment after opening the repository
-
-```bash
-conda create -n KDCenv python -y
+┌─────────────────────────────────────────────────────────────────┐
+│                         ML PIPELINE                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
+│  │    Data      │───▶│   Prepare    │───▶│   Model      │       │
+│  │  Ingestion   │    │  Base Model  │    │  Training    │       │
+│  └──────────────┘    └──────────────┘    └──────────────┘       │
+│         │                                        │               │
+│         ▼                                        ▼               │
+│  ┌──────────────┐                        ┌──────────────┐       │
+│  │   Google     │                        │  Evaluation  │       │
+│  │   Drive      │                        │  + MLflow    │       │
+│  └──────────────┘                        └──────────────┘       │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-```bash
-conda activate KDCenv
-```
+### Model Architecture
 
+| Layer | Output Shape | Parameters |
+|-------|--------------|------------|
+| VGG16 Base (Frozen) | 7×7×512 | 14.7M |
+| Flatten | 25,088 | 0 |
+| Dense (Softmax) | 2 | 50,178 |
 
-### STEP 02- install the requirements
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.8+
+- Git
+
+### Installation
+
 ```bash
+# Clone repository
+git clone https://github.com/ShubhamPawar-3333/Kidney-Disease-Classification.git
+cd Kidney-Disease-Classification
+
+# Create virtual environment
+python -m venv .venv
+source .venv/Scripts/activate  # Windows
+# source .venv/bin/activate    # Linux/Mac
+
+# Install dependencies
 pip install -r requirements.txt
+pip install -e .
 ```
 
+### Training
+
 ```bash
-# Finally run the following command
+# Run full pipeline
+python main.py
+
+# Or use DVC (recommended)
+dvc repro
+```
+
+### Web Application
+
+```bash
 python app.py
+# Open http://localhost:8080
 ```
 
-Now,
+---
+
+## 📁 Project Structure
+
+```
+Kidney-Disease-Classification/
+├── 📂 src/cnnClassifier/
+│   ├── components/          # Core ML components
+│   │   ├── data_ingestion.py
+│   │   ├── prepare_base_model.py
+│   │   ├── model_training.py
+│   │   └── model_evaluation.py
+│   ├── pipeline/            # Pipeline stages
+│   ├── config/              # Configuration management
+│   └── utils/               # Utilities
+├── 📂 config/
+│   └── config.yaml          # Paths configuration
+├── 📂 templates/
+│   └── index.html           # Web UI
+├── 📄 params.yaml            # Hyperparameters
+├── 📄 dvc.yaml               # DVC pipeline definition
+├── 📄 app.py                 # Flask application
+└── 📄 main.py                # Training entry point
+```
+
+---
+
+## ⚙️ Configuration
+
+### Hyperparameters (`params.yaml`)
+
+```yaml
+AUGMENTATION: True
+IMAGE_SIZE: [224, 224, 3]
+BATCH_SIZE: 32
+EPOCHS: 20
+LEARNING_RATE: 0.001
+CLASSES: 2
+```
+
+---
+
+## 📊 Results & Metrics
+
+### Training Performance
+
+- **Validation Accuracy**: 86.4%
+- **Validation Loss**: 0.317
+
+### MLflow Tracking
+
+View experiment runs:
 ```bash
-open up you local host and port
+mlflow ui
+# Open http://localhost:5000
 ```
 
-MLFLOW_TRACKING_URI=https://dagshub.com/ShubhamPawar-3333/Kidney-Disease-Classification.mlflow \
-MLFLOW_TRACKING_USERNAME=ShubhamPawar-3333 \
-MLFLOW_TRACKING_PASSWORD=b56ab07fcce183640c3369cb1195faf02a2ef694 \
-python script.py
+---
 
-Run this to export as env variables:
-```bash
-export MLFLOW_TRACKING_URI=https://dagshub.com/ShubhamPawar-3333/Kidney-Disease-Classification.mlflow
-export MLFLOW_TRACKING_USERNAME=ShubhamPawar-3333
-export MLFLOW_TRACKING_PASSWORD=b56ab07fcce183640c3369cb1195faf02a2ef694
-```
+## 🛠️ Tech Stack
+
+| Category | Technologies |
+|----------|-------------|
+| **Deep Learning** | TensorFlow, Keras, VGG16 |
+| **MLOps** | DVC, MLflow |
+| **Backend** | Flask, Flask-CORS |
+| **Frontend** | HTML5, CSS3, JavaScript |
+| **Data** | NumPy, Pandas |
+
+---
+
+## 🔮 Future Improvements
+
+- [ ] Add Grad-CAM for model explainability
+- [ ] Implement 4-class classification (Normal, Cyst, Stone, Tumor)
+- [ ] Deploy on cloud (AWS/GCP)
+- [ ] Add Docker containerization
+- [ ] Implement CI/CD with GitHub Actions
+
+---
+
+## 📞 Contact
+
+**Shubham Pawar** - [LinkedIn](https://linkedin.com/in/shubham-dilip-pawar/) | [GitHub](https://github.com/ShubhamPawar-3333)
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+<p align="center">
+  Made with ❤️ using TensorFlow & MLflow
+</p>

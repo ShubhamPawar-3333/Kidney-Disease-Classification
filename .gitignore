@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
 
@@ -162,3 +163,24 @@ cython_debug/
 
 # Data folder
 artifacts/*
+mlruns/*
+*.h5
+*.zip
+
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Temp
+inputImage.jpg
+logs/
+
+# files
+Kidney-disease-images/
+mlflow.db
+dvc.lock

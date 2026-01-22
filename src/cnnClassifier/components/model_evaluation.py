@@ -2,7 +2,7 @@ import tensorflow as tf
 from pathlib import Path
 import mlflow
 import mlflow.keras
-from urllib.parse import urlparse
+import os
 from cnnClassifier.config.configuration import EvaluationConfig
 from cnnClassifier.utils.common import save_json
 import warnings
@@ -40,11 +40,17 @@ class Evaluation:
 
     @staticmethod
     def load_model(path: Path) -> tf.keras.Model:
-        return tf.keras.models.load_model(path)
+        return tf.keras.models.load_model(path, compile=False)
     
 
     def evaluation(self):
         self.model = self.load_model(self.config.path_of_model)
+        # Compile model for evaluation (needed after loading with compile=False)
+        self.model.compile(
+            optimizer='adam',
+            loss='categorical_crossentropy',
+            metrics=['accuracy']
+        )
         self._valid_generator()
         self.score = self.model.evaluate(self.valid_generator)
         self.save_score()
@@ -55,21 +61,36 @@ class Evaluation:
 
     
     def log_into_mlflow(self):
-        mlflow.set_registry_uri(self.config.mlflow_uri)
-        tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
+        """
+        Log metrics to MLflow with robust experiment handling.
         
-        with mlflow.start_run():
+        Fix for: mlflow.exceptions.MissingConfigException: 'meta.yaml' does not exist
+        Root Cause: MLflow's default experiment (id=0) doesn't exist in a fresh environment.
+        Solution: Explicitly create/set an experiment by name before starting a run.
+        """
+        # 1. Set tracking URI with absolute path for cross-platform compatibility
+        mlruns_path = Path(os.getcwd()) / "mlruns"
+        mlflow.set_tracking_uri(f"file:///{mlruns_path.as_posix()}")
+        
+        # 2. Explicitly create or get experiment by name (avoids default experiment issue)
+        experiment_name = "Kidney-Disease-Classification"
+        experiment = mlflow.get_experiment_by_name(experiment_name)
+        
+        if experiment is None:
+            experiment_id = mlflow.create_experiment(experiment_name)
+        else:
+            experiment_id = experiment.experiment_id
+        
+        # 3. Start run within the named experiment
+        with mlflow.start_run(experiment_id=experiment_id):
             mlflow.log_params(self.config.all_params)
             mlflow.log_metrics(
                 {"loss": self.score[0], "accuracy": self.score[1]}
             )
-            # Model registry does not work with file store
-            if tracking_url_type_store != "file":
-
-                # Register the model
-                # There are other ways to use the Model Registry, which depends on the use case,
-                # please refer to the doc for more information:
-                # https://mlflow.org/docs/latest/model-registry.html#api-workflow
-                mlflow.keras.log_model(self.model, "model", registered_model_name="VGG16Model")
-            else:
-                mlflow.keras.log_model(self.model, "model")
+            # Log model artifact
+            mlflow.keras.log_model(self.model, "model")
+            
+            print(f"\n✅ MLflow logging complete!")
+            print(f"   Experiment: {experiment_name}")
+            print(f"   Loss: {self.score[0]:.4f}, Accuracy: {self.score[1]:.4f}")
+            print(f"   View runs: mlflow ui --backend-store-uri {mlruns_path}")
