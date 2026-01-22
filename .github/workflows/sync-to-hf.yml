@@ -3,7 +3,7 @@ name: Sync to Hugging Face Spaces
 on:
   push:
     branches: [master]
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
 
 jobs:
   sync-to-huggingface:
@@ -15,9 +15,18 @@ jobs:
           fetch-depth: 0
           lfs: true
       
+      - name: Remove large/unnecessary files
+        run: |
+          rm -rf mlruns/ artifacts/ .venv/ Kidney-disease-images/ research/
+          rm -f mlflow.db dvc.lock *.h5
+          
       - name: Push to HuggingFace Spaces
         env:
           HF_TOKEN: ${{ secrets.HUGGINGFACE_ACCESS_TOKEN }}
         run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add -A
+          git commit -m "Prepare for HuggingFace" --allow-empty
           git remote add hf https://AIenthusSP:$HF_TOKEN@huggingface.co/spaces/AIenthusSP/kidney-disease-classifier
-          git push hf master:main --force
+          git push hf HEAD:main --force
