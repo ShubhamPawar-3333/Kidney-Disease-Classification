@@ -15,7 +15,23 @@ jobs:
       - name: Create clean directory for HF
         run: |
           mkdir hf-deploy
-          # Copy only required files
+          
+          # Create HuggingFace README with config
+          cat > hf-deploy/README.md << 'EOF'
+          ---
+          title: Kidney Disease Classifier
+          emoji: 🩺
+          colorFrom: blue
+          colorTo: purple
+          sdk: docker
+          pinned: false
+          ---
+          
+          # Kidney Disease Classification
+          AI-powered kidney tumor detection from CT scans using VGG16 transfer learning.
+          EOF
+          
+          # Copy required files
           cp app.py hf-deploy/
           cp Dockerfile hf-deploy/
           cp requirements.txt hf-deploy/
