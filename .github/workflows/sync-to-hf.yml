@@ -17,7 +17,7 @@ jobs:
       
       - name: Push to HuggingFace Spaces
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_TOKEN: ${{ secrets.HUGGINGFACE_ACCESS_TOKEN }}
         run: |
           git remote add hf https://AlenthusSP:$HF_TOKEN@huggingface.co/spaces/AlenthusSP/kidney-disease-classifier
           git push hf master:main --force
