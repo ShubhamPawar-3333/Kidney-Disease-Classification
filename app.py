@@ -7,7 +7,6 @@ from flask_cors import CORS, cross_origin
 import numpy as np
 import base64
 import os
-import gdown
 
 os.putenv('LANG', 'en_US.UTF-8')
 os.putenv('LC_ALL', 'en_US.UTF-8')
@@ -15,9 +14,10 @@ os.putenv('LC_ALL', 'en_US.UTF-8')
 app = Flask(__name__)
 CORS(app)
 
-# ============ LOAD MODEL AT STARTUP ============
+# ============ CONFIG ============
+MODEL_REPO = "AIenthusSP/kidney-disease-model"  # HuggingFace Model Hub repo
+MODEL_FILENAME = "model.h5"
 MODEL_PATH = "artifacts/training/model.h5"
-GDRIVE_FILE_ID = "146vCH9kMZ7m6jVx7kGg2yKxwVBKr6vmt"
 CLASS_LABELS = ["Normal", "Tumor"]
 
 # Global model - loaded once at startup
@@ -25,13 +25,29 @@ model = None
 
 
 def download_model_if_needed():
-    """Download model from Google Drive if not exists"""
+    """Download model from HuggingFace Hub if not exists"""
     if not os.path.exists(MODEL_PATH):
-        print("📥 Downloading model from Google Drive...")
+        print("📥 Downloading model from HuggingFace Hub...")
         os.makedirs("artifacts/training", exist_ok=True)
-        url = f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}"
-        gdown.download(url, MODEL_PATH, quiet=False)
-        print("✅ Model downloaded successfully!")
+        
+        try:
+            from huggingface_hub import hf_hub_download
+            hf_hub_download(
+                repo_id=MODEL_REPO,
+                filename=MODEL_FILENAME,
+                local_dir="artifacts/training",
+                local_dir_use_symlinks=False
+            )
+            print("✅ Model downloaded from HuggingFace Hub!")
+        except Exception as e:
+            print(f"⚠️ HuggingFace Hub download failed: {e}")
+            print("📥 Falling back to Google Drive...")
+            import gdown
+            file_id = "146vCH9kMZ7m6jVx7kGg2yKxwVBKr6vmt"
+            gdown.download(f"https://drive.google.com/uc?id={file_id}", MODEL_PATH, quiet=False)
+            print("✅ Model downloaded from Google Drive!")
+    else:
+        print("✅ Model already exists")
 
 
 def load_model_at_startup():

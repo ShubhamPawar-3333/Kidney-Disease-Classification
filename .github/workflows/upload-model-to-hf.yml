@@ -1,0 +1,40 @@
+name: Upload Model to HuggingFace Hub
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  upload-model:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install huggingface_hub
+      
+      - name: Upload model to HuggingFace Hub
+        env:
+          HF_TOKEN: ${{ secrets.HUGGINGFACE_ACCESS_TOKEN }}
+        run: |
+          # Check if model exists in artifacts
+          if [ ! -f "artifacts/training/model.h5" ]; then
+            echo "❌ Model not found. Train the model first."
+            exit 1
+          fi
+          
+          # Upload to HuggingFace
+          huggingface-cli upload AIenthusSP/kidney-disease-model \
+            artifacts/training/model.h5 \
+            model.h5 \
+            --token $HF_TOKEN
+          
+          echo "✅ Model uploaded to HuggingFace Hub!"
