@@ -40,7 +40,13 @@ def load_model_at_startup():
     download_model_if_needed()
     
     print("🔄 Loading model...")
-    model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+    try:
+        # Try loading with safe_mode=False to handle version differences
+        model = tf.keras.models.load_model(MODEL_PATH, compile=False, safe_mode=False)
+    except TypeError:
+        # Fallback for older TensorFlow versions
+        model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+    
     model.compile(
         optimizer='adam',
         loss='categorical_crossentropy',
