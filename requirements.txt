@@ -1,5 +1,4 @@
-tensorflow
-pandas 
+tensorflow>=2.16.0
 numpy
 python-box
 pyYAML
@@ -9,3 +8,4 @@ Flask
 Flask-Cors
 gdown
 gunicorn
+pillow
