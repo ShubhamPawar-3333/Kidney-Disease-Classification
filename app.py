@@ -1,3 +1,7 @@
+# Load TensorFlow at startup (not per-request)
+import tensorflow as tf
+from tensorflow.keras.preprocessing import image as keras_image
+
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS, cross_origin
 import numpy as np
@@ -11,46 +15,44 @@ os.putenv('LC_ALL', 'en_US.UTF-8')
 app = Flask(__name__)
 CORS(app)
 
-# Global model variable
+# ============ LOAD MODEL AT STARTUP ============
+MODEL_PATH = "artifacts/training/model.h5"
+GDRIVE_FILE_ID = "146vCH9kMZ7m6jVx7kGg2yKxwVBKr6vmt"
+CLASS_LABELS = ["Normal", "Tumor"]
+
+# Global model - loaded once at startup
 model = None
 
 
-def download_model():
+def download_model_if_needed():
     """Download model from Google Drive if not exists"""
-    model_path = "artifacts/training/model.h5"
-    
-    if not os.path.exists(model_path):
+    if not os.path.exists(MODEL_PATH):
         print("📥 Downloading model from Google Drive...")
         os.makedirs("artifacts/training", exist_ok=True)
-        
-        file_id = "146vCH9kMZ7m6jVx7kGg2yKxwVBKr6vmt"
-        url = f"https://drive.google.com/uc?id={file_id}"
-        
-        gdown.download(url, model_path, quiet=False)
+        url = f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}"
+        gdown.download(url, MODEL_PATH, quiet=False)
         print("✅ Model downloaded successfully!")
-    else:
-        print("✅ Model already exists")
-    
-    return model_path
 
 
-def load_model():
-    """Load the trained model"""
+def load_model_at_startup():
+    """Load model once at startup"""
     global model
-    # Import tensorflow here to avoid loading at startup
-    import tensorflow as tf
+    download_model_if_needed()
     
-    model_path = download_model()
-    model = tf.keras.models.load_model(model_path, compile=False)
+    print("🔄 Loading model...")
+    model = tf.keras.models.load_model(MODEL_PATH, compile=False)
     model.compile(
         optimizer='adam',
         loss='categorical_crossentropy',
         metrics=['accuracy']
     )
-    print("✅ Model loaded successfully!")
-    return model
+    # Warm up the model with a dummy prediction
+    dummy = np.zeros((1, 224, 224, 3))
+    model.predict(dummy, verbose=0)
+    print("✅ Model loaded and warmed up!")
 
 
+# ============ LIGHTWEIGHT INFERENCE ============
 def decode_image(imgstring, filename):
     """Decode base64 image and save to file"""
     imgdata = base64.b64decode(imgstring)
@@ -59,30 +61,18 @@ def decode_image(imgstring, filename):
 
 
 def predict_image(filename):
-    """Make prediction on the image"""
-    global model
-    import tensorflow as tf
-    from tensorflow.keras.preprocessing import image
-    
-    if model is None:
-        load_model()
-    
-    # Class labels
-    CLASS_LABELS = ["Normal", "Tumor"]
-    
+    """Lightweight prediction - model already loaded"""
     # Load and preprocess image
-    test_image = image.load_img(filename, target_size=(224, 224))
-    test_image = image.img_to_array(test_image)
+    test_image = keras_image.load_img(filename, target_size=(224, 224))
+    test_image = keras_image.img_to_array(test_image)
     test_image = np.expand_dims(test_image, axis=0)
     test_image = test_image / 255.0
     
-    # Predict
-    result = np.argmax(model.predict(test_image), axis=1)
-    prediction = CLASS_LABELS[result[0]]
-    
-    # Get confidence scores
-    probabilities = model.predict(test_image)[0]
-    confidence = float(probabilities[result[0]] * 100)
+    # Predict (model already in memory)
+    probabilities = model.predict(test_image, verbose=0)[0]
+    result_idx = np.argmax(probabilities)
+    prediction = CLASS_LABELS[result_idx]
+    confidence = float(probabilities[result_idx] * 100)
     
     return {
         "prediction": prediction,
@@ -95,6 +85,7 @@ def predict_image(filename):
     }
 
 
+# ============ ROUTES ============
 @app.route("/", methods=['GET'])
 @cross_origin()
 def home():
@@ -117,12 +108,14 @@ def predictRoute():
 @app.route("/health", methods=['GET'])
 @cross_origin()
 def health():
-    return jsonify({"status": "healthy"})
+    return jsonify({"status": "healthy", "model_loaded": model is not None})
 
+
+# ============ STARTUP ============
+# Load model when app starts (not per-request)
+print("🚀 Starting Kidney Disease Classifier...")
+load_model_at_startup()
 
 if __name__ == "__main__":
-    # Pre-load model
-    load_model()
-    
     port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port, debug=False)
