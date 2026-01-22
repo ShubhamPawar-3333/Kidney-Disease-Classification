@@ -11,22 +11,25 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
       
-      - name: Remove large/unnecessary files
+      - name: Create clean directory for HF
         run: |
-          rm -rf mlruns/ artifacts/ .venv/ Kidney-disease-images/ research/
-          rm -f mlflow.db dvc.lock *.h5
+          mkdir hf-deploy
+          # Copy only required files
+          cp app.py hf-deploy/
+          cp Dockerfile hf-deploy/
+          cp requirements.txt hf-deploy/
+          cp -r templates hf-deploy/
           
       - name: Push to HuggingFace Spaces
         env:
           HF_TOKEN: ${{ secrets.HUGGINGFACE_ACCESS_TOKEN }}
         run: |
+          cd hf-deploy
+          git init
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
           git add -A
-          git commit -m "Prepare for HuggingFace" --allow-empty
-          git remote add hf https://AIenthusSP:$HF_TOKEN@huggingface.co/spaces/AIenthusSP/kidney-disease-classifier
-          git push hf HEAD:main --force
+          git commit -m "Deploy to HuggingFace Spaces"
+          git remote add origin https://AIenthusSP:$HF_TOKEN@huggingface.co/spaces/AIenthusSP/kidney-disease-classifier
+          git push origin main --force
