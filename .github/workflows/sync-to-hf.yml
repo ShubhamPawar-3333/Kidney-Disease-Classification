@@ -26,7 +26,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HUGGINGFACE_ACCESS_TOKEN }}
         run: |
           cd hf-deploy
-          git init
+          git init -b main
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
           git add -A
