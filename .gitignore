@@ -183,4 +183,3 @@ logs/
 # files
 Kidney-disease-images/
 mlflow.db
-dvc.lock
